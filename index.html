@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>線上多人同步戳戳樂</title>
+  
+  <!-- 引入 Firebase Web SDK (v9/v10 模組化 CDN) -->
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f4f7f6; margin: 0; padding: 20px; text-align: center; color: #333; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h1 { color: #2c3e50; margin-bottom: 5px; }
+    .status-bar { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; padding: 10px 15px; background: #eef2f5; border-radius: 8px; flex-wrap: wrap; gap: 10px; }
+    .user-input { display: flex; align-items: center; gap: 8px; }
+    input[type="text"] { padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin: 20px 0; }
+    .poke-box { aspect-ratio: 1; background: #e74c3c; color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 20px; font-weight: bold; border-radius: 8px; cursor: pointer; user-select: none; transition: transform 0.1s, background-color 0.3s; position: relative; overflow: hidden; }
+    .poke-box:hover { transform: scale(1.03); background: #c0392b; }
+    .poke-box.poked { background: #ecf0f1; color: #2c3e50; cursor: not-allowed; transform: none; border: 2px dashed #bdc3c7; }
+    .prize-name { font-size: 13px; font-weight: bold; color: #27ae60; word-break: break-all; padding: 2px; }
+    .winner-name { font-size: 11px; color: #7f8c8d; margin-top: 2px; }
+    .log-section { text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; margin-top: 20px; }
+    .log-list { max-height: 150px; overflow-y: auto; padding-left: 20px; margin: 5px 0 0 0; }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: opacity 0.2s; }
+    .btn-danger { background: #e74c3c; color: white; }
+    .btn:hover { opacity: 0.85; }
+    .online-tag { background: #2ecc71; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎯 線上多人同步戳戳樂</h1>
+  
+  <div class="status-bar">
+    <div class="user-input">
+      <label for="username">你的名字：</label>
+      <input type="text" id="username" placeholder="請輸入暱稱" value="幸運兒">
+    </div>
+    <div>
+      <span class="online-tag" id="status-text">連線中...</span>
+      <button class="btn btn-danger" id="reset-btn" style="margin-left: 10px;">🔄 重置遊戲</button>
+    </div>
+  </div>
+
+  <div class="grid" id="grid-container">
+    <!-- 格子將動態生成 -->
+  </div>
+
+  <div class="log-section">
+    <strong>📋 即時開獎紀錄：</strong>
+    <ol class="log-list" id="log-list">
+      <!-- 開獎記錄將動態插入 -->
+    </ol>
+  </div>
+</div>
+
+<!-- 載入 Firebase SDK (Compat 版本最適合單頁 HTML 直接引用) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<script>
+  // 1. Firebase 設定（已填入你的專屬金鑰）
+  const firebaseConfig = {
+    apiKey: "AIzaSyAfm35yGoLahbSTATx35B9G9IQUDF1LvNQ",
+    authDomain: "frogg-game.firebaseapp.com",
+    databaseURL: "https://frogg-game-default-rtdb.firebaseio.com/",
+    projectId: "frogg-game",
+    storageBucket: "frogg-game.firebasestorage.app",
+    messagingSenderId: "3276578634",
+    appId: "1:3276578634:web:d9a2c11e8ba8f7be396bb3"
+  };
+
+  // 預設獎品清單 (共 20 格範例，可自行修改數量與內容)
+  const defaultPrizes = [
+    "頭獎 🏆", "銘謝惠顧 🍫", "二獎 🎁", "銘謝惠顧 🍫", "三獎 🎟️",
+    "銘謝惠顧 🍫", "安慰獎 🍬", "銘謝惠顧 🍫", "特別獎 🌟", "銘謝惠顧 🍫",
+    "安慰獎 🍬", "銘謝惠顧 🍫", "三獎 🎟️", "銘謝惠顧 🍫", "銘謝惠顧 🍫",
+    "安慰獎 🍬", "二獎 🎁", "銘謝惠顧 🍫", "銘謝惠顧 🍫", "隱藏大獎 👑"
+  ];
+
+  // 2. 初始化 Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const gameRef = db.ref("pokeGame");
+
+  const gridContainer = document.getElementById("grid-container");
+  const logList = document.getElementById("log-list");
+  const statusText = document.getElementById("status-text");
+  const usernameInput = document.getElementById("username");
+
+  // 3. 首次開啟時，若資料庫為空則初始化遊戲資料
+  gameRef.once("value", (snapshot) => {
+    if (!snapshot.exists()) {
+      resetGameData();
+    }
+  });
+
+  // 4. 監聽 Firebase 資料庫變化（核心同步邏輯）
+  gameRef.on("value", (snapshot) => {
+    statusText.innerText = "🟢 連線正常";
+    const data = snapshot.val();
+    if (!data || !data.boxes) return;
+
+    renderGrid(data.boxes);
+    renderLogs(data.boxes);
+  }, (error) => {
+    console.error(error);
+    statusText.innerText = "🔴 連線失敗（請檢查 Firebase 權限規則）";
+    statusText.style.background = "#e74c3c";
+  });
+
+  // 渲染 20 個格子
+  function renderGrid(boxes) {
+    gridContainer.innerHTML = "";
+    boxes.forEach((box, index) => {
+      const boxElem = document.createElement("div");
+      boxElem.className = `poke-box ${box.isPoked ? 'poked' : ''}`;
+      
+      if (box.isPoked) {
+        boxElem.innerHTML = `
+          <div class="prize-name">${box.prize}</div>
+          <div class="winner-name">👤 ${box.winner}</div>
+        `;
+      } else {
+        boxElem.innerText = index + 1;
+        boxElem.onclick = () => pokeBox(index, box);
+      }
+      
+      gridContainer.appendChild(boxElem);
+    });
+  }
+
+  // 點擊戳破動作
+  function pokeBox(index, box) {
+    if (box.isPoked) return;
+
+    const winnerName = usernameInput.value.trim() || "匿名玩家";
+    
+    // 更新該格子的資料到 Firebase
+    db.ref(`pokeGame/boxes/${index}`).update({
+      isPoked: true,
+      winner: winnerName,
+      pokedAt: Date.now()
+    });
+  }
+
+  // 渲染開獎日誌
+  function renderLogs(boxes) {
+    logList.innerHTML = "";
+    // 過濾出已戳破的，並按時間倒序排序
+    const pokedBoxes = boxes
+      .filter(b => b.isPoked)
+      .sort((a, b) => (b.pokedAt || 0) - (a.pokedAt || 0));
+
+    pokedBoxes.forEach(box => {
+      const li = document.createElement("li");
+      li.innerHTML = `<strong>${box.winner}</strong> 戳中了 <span>${box.prize}</span>`;
+      logList.appendChild(li);
+    });
+  }
+
+  // 重置遊戲資料庫
+  function resetGameData() {
+    const initialBoxes = defaultPrizes.map((prize, idx) => ({
+      id: idx + 1,
+      prize: prize,
+      isPoked: false,
+      winner: "",
+      pokedAt: 0
+    }));
+
+    gameRef.set({
+      createdAt: Date.now(),
+      boxes: initialBoxes
+    });
+  }
+
+  // 重置按鈕綁定事件
+  document.getElementById("reset-btn").onclick = () => {
+    if (confirm("確定要重置所有格子嗎？所有開獎紀錄將會清空。")) {
+      resetGameData();
+    }
+  };
+</script>
+
+</body>
+</html>
