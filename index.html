@@ -639,7 +639,6 @@
             <div class="capture-area">
                 <div class="event-title" id="playerEventTitle"></div>
                 
-                <!-- 新增：玩家頁面的時間與剩餘獎項區塊 -->
                 <div class="toolbar">
                     <div class="time-box">
                         <div>🕒 <span id="playerClock">載入時間...</span></div>
@@ -657,7 +656,49 @@
     </div>
 
     <script>
-        // 1. Firebase 設定
+        // ==================== 0. 防 F12 與盜取保護機制 ====================
+        // 禁用右鍵選單
+        document.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+        });
+
+        // 禁用常見開發者工具快捷鍵
+        document.addEventListener('keydown', function (e) {
+            // 禁用 F12
+            if (e.key === 'F12' || e.keyCode === 123) {
+                e.preventDefault();
+                return false;
+            }
+            // 禁用 Ctrl+Shift+I / J / C (Mac: Cmd+Alt+I / J / C)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
+                e.preventDefault();
+                return false;
+            }
+            // 禁用 Ctrl+U (檢視原始碼)
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u')) {
+                e.preventDefault();
+                return false;
+            }
+            // 禁用 Ctrl+S (存檔)
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'S' || e.key === 's')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Debugger 干擾（強行開啟 DevTools 時會觸發無限斷點卡死）
+        setInterval(function () {
+            const startTime = performance.now();
+            (function () {
+                return false;
+            })["constructor"]("debugger")();
+            const endTime = performance.now();
+            if (endTime - startTime > 100) {
+                // 可在此處執行卡死或自動跳轉
+            }
+        }, 500);
+
+        // ==================== 1. Firebase 設定 ====================
         const firebaseConfig = {
             apiKey: "AIzaSyAfm35yGoLahbSTATx35B9G9IQUDF1LvNQ",
             authDomain: "frogg-game.firebaseapp.com",
@@ -851,7 +892,7 @@
                 isPoked: false,
                 winner: "",
                 pokedAt: 0,
-                coverEmoji: "❔"
+                coverEmoji: "👻"
             }));
 
             const gamePayload = {
@@ -913,7 +954,7 @@
                 } else {
                     const paper = document.createElement('div');
                     paper.className = 'paper';
-                    paper.innerHTML = '❔';
+                    paper.innerHTML = '👻';
                     paper.onclick = () => handleAdminPoke(cell.id - 1, cell);
                     cellEl.appendChild(paper);
                 }
@@ -996,7 +1037,7 @@
                 } else {
                     const paper = document.createElement('div');
                     paper.className = 'paper';
-                    paper.innerHTML = '❔';
+                    paper.innerHTML = '👻';
                     paper.onclick = () => handlePlayerPoke(cell.id - 1, cell, hasPoked, isExpired, hasBigPrizesLeft);
                     cellEl.appendChild(paper);
                 }
