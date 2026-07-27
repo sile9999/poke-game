@@ -839,7 +839,7 @@
                 isPoked: false,
                 winner: "",
                 pokedAt: 0,
-                coverEmoji: "❓"
+                coverEmoji: "❔"
             }));
 
             const gamePayload = {
@@ -976,7 +976,7 @@
                 } else {
                     const paper = document.createElement('div');
                     paper.className = 'paper';
-                    paper.innerHTML = '❓';
+                    paper.innerHTML = '❔';
                     paper.onclick = () => handlePlayerPoke(cell.id - 1, cell, hasPoked, isExpired, hasBigPrizesLeft);
                     cellEl.appendChild(paper);
                 }
