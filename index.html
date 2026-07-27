@@ -577,7 +577,6 @@
                 <div class="button-group" style="margin-top: 12px;">
                     <a href="#player" target="_blank" class="btn-action btn-orange">🚀 開啟玩家連線頁</a>
                     <button class="btn-action btn-purple" id="copyPlayerUrlBtn" onclick="copyPlayerUrl()">🔗 複製玩家頁面網址</button>
-                    <!-- 複製密碼備註按鈕 -->
                     <button class="btn-action btn-orange" id="copyPassNoteBtn" onclick="copyPassNote()">🔑 複製密碼備註</button>
                 </div>
             </div>
@@ -733,13 +732,9 @@
 
         // 複製密碼、結束時間與備註說明
         async function copyPassNote() {
-            // 取得密碼
             const pass = (currentGameData && currentGameData.password) ? currentGameData.password : document.getElementById('roomPassword').value.trim();
-            
-            // 取得備註
             const note = (currentGameData && currentGameData.note !== undefined) ? currentGameData.note : document.getElementById('eventNote').value.trim();
 
-            // 取得結束時間
             let endStr = "未設定";
             if (currentGameData && currentGameData.endTime) {
                 endStr = formatShortDate(currentGameData.endTime);
@@ -777,6 +772,7 @@
             document.getElementById('modeB').classList.toggle('active', mode === 'B');
         }
 
+        // 新增獎品列並自動聚焦
         function addPrizeRow() {
             const container = document.getElementById('prizeListContainer');
             const row = document.createElement('div');
@@ -787,6 +783,9 @@
                 <button class="btn-del-item" onclick="removePrizeRow(this)">✕</button>
             `;
             container.appendChild(row);
+            
+            // 自動聚焦至新建立的「獎品名稱」輸入框
+            row.querySelector('.a-prize-name').focus();
         }
 
         function removePrizeRow(btn) {
@@ -832,7 +831,6 @@
                 prizeList = rawInput.split(/[,，\n]/).map(i => i.trim()).filter(i => i !== "");
             }
 
-            // 補烏龜或裁切
             while (prizeList.length < totalCells) prizeList.push("🐢 烏龜");
             if (prizeList.length > totalCells) prizeList = prizeList.slice(0, totalCells);
 
@@ -944,10 +942,7 @@
             const pokeBox = document.getElementById('playerPokeBox');
             pokeBox.innerHTML = "";
 
-            // 時間到期判定
             const isExpired = data.endTime && Date.now() > data.endTime;
-
-            // 檢查該玩家名稱是否已經戳過
             const hasPoked = currentPlayerName ? data.cells.some(c => c.isPoked && c.winner === currentPlayerName) : false;
             const statusTag = document.getElementById('playerStatusTag');
             
