@@ -407,6 +407,7 @@
             text-overflow: ellipsis;
         }
 
+        /* 氣球封面樣式 */
         .paper {
             position: absolute;
             top: 0;
@@ -418,7 +419,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.6rem; /* 設定氣球大小 */
             font-weight: bold;
             cursor: pointer;
             border: 1px dashed #ffe082;
@@ -622,7 +623,7 @@
         <div id="playerGameArea" style="display: none; width: 100%;">
             <div style="background: white; padding: 10px 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                 <div>👤 玩家：<strong id="displayName" style="color: #d32f2f;"></strong></div>
-                <div id="playerStatusTag" style="font-size: 0.85rem; font-weight: bold; color: #2e7d32;">可點擊挑選一格</div>
+                <div id="playerStatusTag" style="font-size: 0.85rem; font-weight: bold; color: #2e7d32;">✅ 可點擊挑選一格</div>
             </div>
 
             <div class="capture-area">
@@ -890,7 +891,7 @@
                 } else {
                     const paper = document.createElement('div');
                     paper.className = 'paper';
-                    paper.innerText = cell.id;
+                    paper.innerHTML = '🎈'; // 替代格子數字為氣球
                     paper.onclick = () => handleAdminPoke(cell.id - 1, cell);
                     cellEl.appendChild(paper);
                 }
@@ -966,7 +967,7 @@
                 } else {
                     const paper = document.createElement('div');
                     paper.className = 'paper';
-                    paper.innerText = cell.id;
+                    paper.innerHTML = '🎈'; // 替代格子數字為氣球
                     paper.onclick = () => handlePlayerPoke(cell.id - 1, cell, hasPoked, isExpired, hasBigPrizesLeft);
                     cellEl.appendChild(paper);
                 }
@@ -999,7 +1000,7 @@
             }
 
             if (cell.isPoked) {
-                alert("這一格已經被別人戳破囉！請選擇其他格子。");
+                alert("這一格已經被別人戳破囉！請選擇其他氣球。");
                 return;
             }
 
