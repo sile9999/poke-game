@@ -1118,7 +1118,7 @@
             if (winners.length > 0) {
                 winners.forEach(item => {
                     const name = item.winner ? item.winner : "管理者代抽";
-                    text += `• 第 ${item.id} 格: ${item.prize} ➔ "@"+${name}\n`;
+                    text += `• 第 ${item.id} 格: ${item.prize} ➔ @${name}\n`;
                 });
             } else {
                 text += `(尚無中獎紀錄)\n`;
