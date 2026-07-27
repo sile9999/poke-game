@@ -412,7 +412,7 @@
             text-overflow: ellipsis;
         }
 
-        /* 未開格 (封面) 樣式：Tiffany 藍漸層 */
+        /* 未開格 (封面) 樣式：Tiffany 藍漸層 + 白色問號 */
         .paper {
             position: absolute;
             top: 0;
@@ -423,7 +423,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.2rem;
+            font-size: 1.8rem;
+            color: #ffffff;
             cursor: pointer;
             border: 2px solid #00acc1;
             border-radius: 5px;
@@ -662,14 +663,6 @@
         const db = firebase.database();
         const gameRef = db.ref("sharedPokeGame");
 
-        // 全域可用的繽紛 Emoji 庫
-        const EMOJI_POOL = [
-            '🎈', '🎈', '🎁', '🍓', '🍑', ' cherries', '🥑', '🍩', 
-            '🧁', '🍬', '🍭', '🧸', '🐣', '🐶', '🐱', '🐰', 
-            '🦊', '🐼', '🐸', '⭐', '🌟', '🌈', '🍦', '🎨',
-            '🔮', '🎪', '🎯', '🎰', '🚀', '🌺', '🌻', '🍎'
-        ];
-
         // 全域變數
         let currentGameData = null;
         let activeMode = 'A';
@@ -839,7 +832,6 @@
             if (prizeList.length > totalCells) prizeList = prizeList.slice(0, totalCells);
 
             const shuffledPrizes = shuffle(prizeList);
-            const shuffledEmojis = shuffle([...EMOJI_POOL]);
 
             const cellsData = shuffledPrizes.map((prize, idx) => ({
                 id: idx + 1,
@@ -847,7 +839,7 @@
                 isPoked: false,
                 winner: "",
                 pokedAt: 0,
-                coverEmoji: shuffledEmojis[idx % shuffledEmojis.length]
+                coverEmoji: "❓"
             }));
 
             const gamePayload = {
@@ -909,7 +901,7 @@
                 } else {
                     const paper = document.createElement('div');
                     paper.className = 'paper';
-                    paper.innerHTML = cell.coverEmoji || '🎈';
+                    paper.innerHTML = '❓';
                     paper.onclick = () => handleAdminPoke(cell.id - 1, cell);
                     cellEl.appendChild(paper);
                 }
@@ -984,7 +976,7 @@
                 } else {
                     const paper = document.createElement('div');
                     paper.className = 'paper';
-                    paper.innerHTML = cell.coverEmoji || '🎈';
+                    paper.innerHTML = '❓';
                     paper.onclick = () => handlePlayerPoke(cell.id - 1, cell, hasPoked, isExpired, hasBigPrizesLeft);
                     cellEl.appendChild(paper);
                 }
