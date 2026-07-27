@@ -1136,25 +1136,48 @@
             }
         }
 
-        // 複製截圖
+        // 複製截圖 (修復版)
         async function copyScreenshot() {
             const captureArea = document.getElementById('captureArea');
             const btn = document.getElementById('screenshotBtn');
+            const originalText = btn.innerText;
+
+            btn.innerText = "⏳ 截圖處理中...";
             btn.disabled = true;
 
             try {
-                const canvas = await html2canvas(captureArea, { scale: 2, backgroundColor: '#fce4ec' });
-                canvas.toBlob(async (blob) => {
-                    if (blob) {
-                        const item = new ClipboardItem({ "image/png": blob });
-                        await navigator.clipboard.write([item]);
-                        btn.innerText = "✅ 已複製！";
-                        setTimeout(() => { btn.innerText = "📋 複製截圖"; btn.disabled = false; }, 2000);
-                    }
+                const item = new ClipboardItem({
+                    "image/png": new Promise(async (resolve, reject) => {
+                        try {
+                            const canvas = await html2canvas(captureArea, {
+                                scale: 2,
+                                backgroundColor: '#fce4ec',
+                                useCORS: true
+                            });
+
+                            canvas.toBlob((blob) => {
+                                if (blob) resolve(blob);
+                                else reject(new Error("Canvas 轉圖片失敗"));
+                            }, 'image/png');
+                        } catch (err) {
+                            reject(err);
+                        }
+                    })
                 });
+
+                await navigator.clipboard.write([item]);
+
+                btn.innerText = "✅ 截圖已複製！";
+                setTimeout(() => { 
+                    btn.innerText = originalText; 
+                    btn.disabled = false; 
+                }, 2000);
+
             } catch (err) {
+                console.error("截圖複製失敗:", err);
+                btn.innerText = originalText;
                 btn.disabled = false;
-                alert("截圖失敗！");
+                alert("複製截圖失敗！\n請確認網頁是在安全連線 (https://) 或本機環境下執行，或請改用手動截圖。");
             }
         }
 
