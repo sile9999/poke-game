@@ -87,7 +87,9 @@
             white-space: nowrap;
         }
 
-        .input-group input[type="text"], .input-group input[type="password"] {
+        .input-group input[type="text"], 
+        .input-group input[type="password"],
+        .input-group input[type="datetime-local"] {
             flex-grow: 1;
             padding: 6px 8px;
             border: 1px solid #ccc;
@@ -497,6 +499,10 @@
                     <input type="text" id="roomPassword" value="8888" placeholder="設定連線密碼">
                 </div>
                 <div class="input-row">
+                    <label for="endTime">⏳ 結束時間：</label>
+                    <input type="datetime-local" id="endTime">
+                </div>
+                <div class="input-row">
                     <label for="totalCount">總格子數量：</label>
                     <input type="number" id="totalCount" value="36" min="5" step="1">
                 </div>
@@ -531,7 +537,6 @@
 
             <button class="btn-apply" onclick="publishNewGame()">生成全新同步戳戳樂</button>
             
-            <!-- 新增/修正按鈕區塊：切換新分頁與複製玩家網址 -->
             <div class="button-group" style="margin-top: 12px;">
                 <a href="#player" target="_blank" class="btn-action btn-orange">🚀 開啟玩家連線頁</a>
                 <button class="btn-action btn-purple" id="copyPlayerUrlBtn" onclick="copyPlayerUrl()">🔗 複製玩家頁面網址</button>
@@ -641,7 +646,7 @@
             
             if(viewName === 'player') {
                 document.getElementById('pagePlayer').classList.add('active');
-                if(mainHeader) mainHeader.style.display = 'none'; // 第二頁面隱藏原頂部標題
+                if(mainHeader) mainHeader.style.display = 'none';
             } else {
                 document.getElementById('pageMain').classList.add('active');
                 if(mainHeader) mainHeader.style.display = 'block';
@@ -707,6 +712,7 @@
         function publishNewGame() {
             const eventName = document.getElementById('eventName').value.trim();
             const password = document.getElementById('roomPassword').value.trim();
+            const endTimeValue = document.getElementById('endTime').value;
             const note = document.getElementById('eventNote').value.trim();
             const totalCells = parseInt(document.getElementById('totalCount').value) || 36;
 
@@ -714,6 +720,8 @@
                 alert("請務必設定房間密碼！");
                 return;
             }
+
+            const endTimeStamp = endTimeValue ? new Date(endTimeValue).getTime() : 0;
 
             let prizeList = [];
             if (activeMode === 'A') {
@@ -746,6 +754,7 @@
             const gamePayload = {
                 eventName: eventName,
                 password: password,
+                endTime: endTimeStamp,
                 note: note,
                 totalCells: totalCells,
                 cells: cellsData,
@@ -811,7 +820,6 @@
             const titleEl = document.getElementById('playerEventTitle');
             const loginTitleEl = document.getElementById('loginCardTitle');
             
-            // 修正 4：置換為「活動名稱」作為標題顯示
             const displayTitle = data.eventName ? `🍌 ${data.eventName} 戳戳樂 🍌` : "🏮 懷舊戳戳樂 🏮";
             
             if (titleEl) {
@@ -827,11 +835,17 @@
             const pokeBox = document.getElementById('playerPokeBox');
             pokeBox.innerHTML = "";
 
+            // 時間到期判定
+            const isExpired = data.endTime && Date.now() > data.endTime;
+
             // 檢查該玩家名稱是否已經戳過
             const hasPoked = data.cells.some(c => c.isPoked && c.winner === currentPlayerName);
             const statusTag = document.getElementById('playerStatusTag');
             
-            if (hasPoked) {
+            if (isExpired) {
+                statusTag.innerText = "⏰ 活動已截止";
+                statusTag.style.color = "#d32f2f";
+            } else if (hasPoked) {
                 statusTag.innerText = "❌ 您已完成抽獎 (每人限一次)";
                 statusTag.style.color = "#d32f2f";
             } else {
@@ -854,7 +868,7 @@
                     const paper = document.createElement('div');
                     paper.className = 'paper';
                     paper.innerText = cell.id;
-                    paper.onclick = () => handlePlayerPoke(cell.id - 1, cell, hasPoked);
+                    paper.onclick = () => handlePlayerPoke(cell.id - 1, cell, hasPoked, isExpired);
                     cellEl.appendChild(paper);
                 }
                 pokeBox.appendChild(cellEl);
@@ -862,7 +876,13 @@
         }
 
         // 玩家進行點擊開獎
-        function handlePlayerPoke(index, cell, hasPoked) {
+        function handlePlayerPoke(index, cell, hasPoked, isExpired) {
+            // 驗證是否超時
+            if (isExpired || (currentGameData.endTime && Date.now() > currentGameData.endTime)) {
+                alert("⏰ 活動時間已結束，無法再進行戳獎囉！");
+                return;
+            }
+
             if (!currentPlayerName) {
                 alert("請先登入名字！");
                 return;
