@@ -576,8 +576,7 @@
                 
                 <div class="button-group" style="margin-top: 12px;">
                     <a href="#player" target="_blank" class="btn-action btn-orange">🚀 開啟玩家連線頁</a>
-                    <button class="btn-action btn-purple" id="copyPlayerUrlBtn" onclick="copyPlayerUrl()">🔗 複製玩家頁面網址</button>
-                    <button class="btn-action btn-orange" id="copyPassNoteBtn" onclick="copyPassNote()">🔑 複製密碼備註</button>
+                    <button class="btn-action btn-purple" id="copyPlayerInfoBtn" onclick="copyPlayerInfo()">📋 複製戳戳網址</button>
                 </div>
             </div>
 
@@ -716,22 +715,10 @@
             }
         }
 
-        // 複製第二頁面網址
-        async function copyPlayerUrl() {
+        // 一鍵複製玩家網址與完整活動資訊
+        async function copyPlayerInfo() {
             const baseUrl = window.location.href.split('#')[0];
             const playerUrl = baseUrl + "#player";
-            try {
-                await navigator.clipboard.writeText(playerUrl);
-                const btn = document.getElementById('copyPlayerUrlBtn');
-                btn.innerText = "✅ 網址已複製！";
-                setTimeout(() => btn.innerText = "🔗 複製玩家頁面網址", 2000);
-            } catch (err) {
-                alert("複製失敗，請手動複製此網址：\n" + playerUrl);
-            }
-        }
-
-        // 複製密碼、結束時間與備註說明
-        async function copyPassNote() {
             const pass = (currentGameData && currentGameData.password) ? currentGameData.password : document.getElementById('roomPassword').value.trim();
             const note = (currentGameData && currentGameData.note !== undefined) ? currentGameData.note : document.getElementById('eventNote').value.trim();
 
@@ -745,15 +732,15 @@
                 }
             }
 
-            const textToCopy = `🔑 房間密碼：${pass}\n⏰ 結束時間：${endStr}\n📝 備註說明：${note}`;
+            const textToCopy = `🎮 戳戳樂活動連結：\n${playerUrl}\n\n🔑 房間密碼：${pass}\n⏰ 結束時間：${endStr}\n📝 備註說明：${note}`;
 
             try {
                 await navigator.clipboard.writeText(textToCopy);
-                const btn = document.getElementById('copyPassNoteBtn');
-                btn.innerText = "✅ 密碼備註已複製！";
-                setTimeout(() => btn.innerText = "🔑 複製密碼備註", 2000);
+                const btn = document.getElementById('copyPlayerInfoBtn');
+                btn.innerText = "✅ 連結與資訊已複製！";
+                setTimeout(() => btn.innerText = "📋 複製戳戳網址", 2000);
             } catch (err) {
-                alert("複製失敗，內容如下：\n" + textToCopy);
+                alert("複製失敗，內容如下：\n\n" + textToCopy);
             }
         }
 
@@ -944,9 +931,13 @@
 
             const isExpired = data.endTime && Date.now() > data.endTime;
             const hasPoked = currentPlayerName ? data.cells.some(c => c.isPoked && c.winner === currentPlayerName) : false;
+            const allPoked = data.cells.every(c => c.isPoked); // 判斷是否全數抽完
             const statusTag = document.getElementById('playerStatusTag');
             
-            if (isExpired) {
+            if (allPoked) {
+                statusTag.innerText = "⛔ 活動已結束 (獎品全數抽完)";
+                statusTag.style.color = "#d32f2f";
+            } else if (isExpired) {
                 statusTag.innerText = "⏰ 活動已截止";
                 statusTag.style.color = "#d32f2f";
             } else if (hasPoked) {
@@ -974,7 +965,7 @@
                     const paper = document.createElement('div');
                     paper.className = 'paper';
                     paper.innerText = cell.id;
-                    paper.onclick = () => handlePlayerPoke(cell.id - 1, cell, hasPoked, isExpired);
+                    paper.onclick = () => handlePlayerPoke(cell.id - 1, cell, hasPoked, isExpired, allPoked);
                     cellEl.appendChild(paper);
                 }
                 pokeBox.appendChild(cellEl);
@@ -982,7 +973,12 @@
         }
 
         // 玩家進行點擊開獎
-        function handlePlayerPoke(index, cell, hasPoked, isExpired) {
+        function handlePlayerPoke(index, cell, hasPoked, isExpired, allPoked) {
+            if (allPoked) {
+                alert("⛔ 活動已結束，所有格子都已經被戳完囉！");
+                return;
+            }
+
             if (isExpired || (currentGameData.endTime && Date.now() > currentGameData.endTime)) {
                 alert("⏰ 活動時間已結束，無法再進行戳獎囉！");
                 return;
