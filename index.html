@@ -409,29 +409,30 @@
             text-overflow: ellipsis;
         }
 
-        /* 氣球/ Emoji 封面樣式 */
+        /* 未開格 (封面) 樣式：改為高對比度的鮮豔馬卡龍暖黃色 */
         .paper {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #fff0f3, #ffe3e8);
+            background: linear-gradient(135deg, #fff9c4, #ffe082); /* 亮明黃漸層 */
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.2rem; /* Emoji 特大化 */
+            font-size: 2.2rem;
             cursor: pointer;
-            border: 1.5px dashed #ffb74d;
+            border: 2px stroke #ffa000; /* 加深邊框線 */
             border-radius: 5px;
             transition: transform 0.15s ease, background 0.2s;
             user-select: none;
             z-index: 2;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
         }
 
         .paper:hover {
             transform: scale(1.08);
-            background: linear-gradient(135deg, #ffe3e8, #ffd1d9);
+            background: linear-gradient(135deg, #ffe082, #ffd54f);
         }
 
         .paper.poked {
@@ -658,7 +659,7 @@
         const db = firebase.database();
         const gameRef = db.ref("sharedPokeGame");
 
-        // 全域可用的繽紛 Emoji 庫（包含氣球、水果、甜點、可愛動物等）
+        // 全域可用的繽紛 Emoji 庫
         const EMOJI_POOL = [
             '🎈', '🎈', '🎁', '🍓', '🍑', '🍒', '🥑', '🍩', 
             '🧁', '🍬', '🍭', '🧸', '🐣', '🐶', '🐱', '🐰', 
@@ -835,8 +836,6 @@
             if (prizeList.length > totalCells) prizeList = prizeList.slice(0, totalCells);
 
             const shuffledPrizes = shuffle(prizeList);
-            
-            // 隨機打亂 Emoji 陣列
             const shuffledEmojis = shuffle([...EMOJI_POOL]);
 
             const cellsData = shuffledPrizes.map((prize, idx) => ({
@@ -845,7 +844,6 @@
                 isPoked: false,
                 winner: "",
                 pokedAt: 0,
-                // 為每一格配對隨機的 Emoji 圖案
                 coverEmoji: shuffledEmojis[idx % shuffledEmojis.length]
             }));
 
@@ -908,7 +906,6 @@
                 } else {
                     const paper = document.createElement('div');
                     paper.className = 'paper';
-                    // 顯示預設或隨機配對的 Emoji (若舊版無該欄位則降級顯示氣球)
                     paper.innerHTML = cell.coverEmoji || '🎈';
                     paper.onclick = () => handleAdminPoke(cell.id - 1, cell);
                     cellEl.appendChild(paper);
@@ -984,7 +981,6 @@
                 } else {
                     const paper = document.createElement('div');
                     paper.className = 'paper';
-                    // 顯示預設或隨機配對的 Emoji
                     paper.innerHTML = cell.coverEmoji || '🎈';
                     paper.onclick = () => handlePlayerPoke(cell.id - 1, cell, hasPoked, isExpired, hasBigPrizesLeft);
                     cellEl.appendChild(paper);
