@@ -431,7 +431,7 @@
             white-space: nowrap;
         }
 
-        /* 玩家登入面板 */
+        /* 登入面板通用卡片 */
         .login-card {
             background: white;
             padding: 25px;
@@ -487,86 +487,96 @@
 
     <!-- ==================== 頁面一：主控與設定頁面 ==================== -->
     <div id="pageMain" class="page active">
-        <div class="config-panel">
-            <h3>⚙️ 遊戲設定 (主控面版)</h3>
-            <div class="input-group">
-                <div class="input-row">
-                    <label for="eventName">活動名稱：</label>
-                    <input type="text" id="eventName" placeholder="例如：嬌嬌">
-                </div>
-                <div class="input-row">
-                    <label for="roomPassword">🔑 房間密碼：</label>
-                    <input type="text" id="roomPassword" value="8888" placeholder="設定連線密碼">
-                </div>
-                <div class="input-row">
-                    <label for="endTime">⏳ 結束時間：</label>
-                    <input type="datetime-local" id="endTime">
-                </div>
-                <div class="input-row">
-                    <label for="totalCount">總格子數量：</label>
-                    <input type="number" id="totalCount" value="36" min="5" step="1">
-                </div>
-                <div class="input-row">
-                    <label for="eventNote">備註說明：</label>
-                    <input type="text" id="eventNote" value="每人限抽一次，號碼重複者棄權">
-                </div>
-            </div>
-            
-            <label style="font-size: 0.8rem; color: #333; font-weight: bold; display: block; margin-bottom: 4px;">
-                🎁 獎品清單設定方式：
-            </label>
-            <div class="mode-tabs">
-                <button class="tab-btn active" onclick="switchMode('A')">模式 A：品名 + 數量拆分</button>
-                <button class="tab-btn" onclick="switchMode('B')">模式 B：自由文字輸入</button>
-            </div>
+        <!-- 主頁面登入卡片 -->
+        <div id="adminLoginCard" class="login-card">
+            <h2>🔑 管理員登入</h2>
+            <input type="password" id="inputAdminPass" placeholder="請輸入主控密碼 (預設: 3067869)">
+            <button class="btn-apply" onclick="loginAdmin()">進入管理後台</button>
+        </div>
 
-            <div id="modeA" class="mode-content active">
-                <div id="prizeListContainer">
-                    <div class="prize-item-row">
-                        <input type="text" class="a-prize-name" placeholder="獎品名稱" maxlength="20">
-                        <input type="number" class="a-prize-count" placeholder="數量" value="1" min="1">
-                        <button class="btn-del-item" onclick="removePrizeRow(this)">✕</button>
+        <!-- 管理員主要控制內容 (驗證成功後顯示) -->
+        <div id="adminContentArea" style="display: none; width: 100%;">
+            <div class="config-panel">
+                <h3>⚙️ 遊戲設定 (主控面版)</h3>
+                <div class="input-group">
+                    <div class="input-row">
+                        <label for="eventName">活動名稱：</label>
+                        <input type="text" id="eventName" placeholder="例如：嬌嬌">
+                    </div>
+                    <div class="input-row">
+                        <label for="roomPassword">🔑 玩家頁連線密碼：</label>
+                        <input type="text" id="roomPassword" value="8888" placeholder="設定玩家進入密碼">
+                    </div>
+                    <div class="input-row">
+                        <label for="endTime">⏳ 結束時間：</label>
+                        <input type="datetime-local" id="endTime">
+                    </div>
+                    <div class="input-row">
+                        <label for="totalCount">總格子數量：</label>
+                        <input type="number" id="totalCount" value="36" min="5" step="1">
+                    </div>
+                    <div class="input-row">
+                        <label for="eventNote">備註說明：</label>
+                        <input type="text" id="eventNote" value="每人限抽一次，號碼重複者棄權">
                     </div>
                 </div>
-                <button class="btn-add-item" onclick="addPrizeRow()">＋ 新增獎品項目</button>
-            </div>
+                
+                <label style="font-size: 0.8rem; color: #333; font-weight: bold; display: block; margin-bottom: 4px;">
+                    🎁 獎品清單設定方式：
+                </label>
+                <div class="mode-tabs">
+                    <button class="tab-btn active" onclick="switchMode('A')">模式 A：品名 + 數量拆分</button>
+                    <button class="tab-btn" onclick="switchMode('B')">模式 B：自由文字輸入</button>
+                </div>
 
-            <div id="modeB" class="mode-content">
-                <textarea id="prizeInput" placeholder="例如：禮盒, 特輯, 二獎"></textarea>
-            </div>
+                <div id="modeA" class="mode-content active">
+                    <div id="prizeListContainer">
+                        <div class="prize-item-row">
+                            <input type="text" class="a-prize-name" placeholder="獎品名稱" maxlength="20">
+                            <input type="number" class="a-prize-count" placeholder="數量" value="1" min="1">
+                            <button class="btn-del-item" onclick="removePrizeRow(this)">✕</button>
+                        </div>
+                    </div>
+                    <button class="btn-add-item" onclick="addPrizeRow()">＋ 新增獎品項目</button>
+                </div>
 
-            <button class="btn-apply" onclick="publishNewGame()">生成全新同步戳戳樂</button>
-            
-            <div class="button-group" style="margin-top: 12px;">
-                <a href="#player" target="_blank" class="btn-action btn-orange">🚀 開啟玩家連線頁</a>
-                <button class="btn-action btn-purple" id="copyPlayerUrlBtn" onclick="copyPlayerUrl()">🔗 複製玩家頁面網址</button>
-            </div>
-        </div>
+                <div id="modeB" class="mode-content">
+                    <textarea id="prizeInput" placeholder="例如：禮盒, 特輯, 二獎"></textarea>
+                </div>
 
-        <!-- 截圖與即時開獎面板 -->
-        <div class="capture-area" id="captureArea">
-            <div class="event-title" id="eventTitleDisplay" style="display: none;"></div>
-            <div class="toolbar">
-                <div class="time-box">
-                    <div>🕒 <span id="clock">載入時間...</span></div>
-                    <div>🎁 剩餘大獎：<span class="prizes-count" id="remainingPrizesCount">0 / 0</span></div>
+                <button class="btn-apply" onclick="publishNewGame()">生成全新同步戳戳樂</button>
+                
+                <div class="button-group" style="margin-top: 12px;">
+                    <a href="#player" target="_blank" class="btn-action btn-orange">🚀 開啟玩家連線頁</a>
+                    <button class="btn-action btn-purple" id="copyPlayerUrlBtn" onclick="copyPlayerUrl()">🔗 複製玩家頁面網址</button>
                 </div>
             </div>
-            <div class="poke-box" id="mainPokeBox"></div>
-            <div class="footer-row">
-                <div class="note-display" id="noteDisplay">※ 每人限抽一次，號碼重複者棄權 ※</div>
-                <div class="copyright-display">©2026乳蕉四妻🐸</div>
+
+            <!-- 截圖與即時開獎面板 -->
+            <div class="capture-area" id="captureArea">
+                <div class="event-title" id="eventTitleDisplay" style="display: none;"></div>
+                <div class="toolbar">
+                    <div class="time-box">
+                        <div>🕒 <span id="clock">載入時間...</span></div>
+                        <div>🎁 剩餘大獎：<span class="prizes-count" id="remainingPrizesCount">0 / 0</span></div>
+                    </div>
+                </div>
+                <div class="poke-box" id="mainPokeBox"></div>
+                <div class="footer-row">
+                    <div class="note-display" id="noteDisplay">※ 每人限抽一次，號碼重複者棄權 ※</div>
+                    <div class="copyright-display">©2026乳蕉四妻🐸</div>
+                </div>
             </div>
-        </div>
 
-        <div class="button-group">
-            <button class="btn-action" id="screenshotBtn" onclick="copyScreenshot()">📋 複製截圖</button>
-            <button class="btn-action btn-copy-list" id="copyListBtn" onclick="copyWinnerList()">📝 複製得獎列表</button>
-        </div>
+            <div class="button-group">
+                <button class="btn-action" id="screenshotBtn" onclick="copyScreenshot()">📋 複製截圖</button>
+                <button class="btn-action btn-copy-list" id="copyListBtn" onclick="copyWinnerList()">📝 複製得獎列表</button>
+            </div>
 
-        <div class="winner-list-panel">
-            <h3>🏆 開獎即時紀錄</h3>
-            <div id="winnerTableContainer"><div class="no-data">尚無開獎紀錄</div></div>
+            <div class="winner-list-panel">
+                <h3>🏆 開獎即時紀錄</h3>
+                <div id="winnerTableContainer"><div class="no-data">尚無開獎紀錄</div></div>
+            </div>
         </div>
     </div>
 
@@ -618,6 +628,7 @@
         let currentGameData = null;
         let activeMode = 'A';
         let currentPlayerName = "";
+        const ADMIN_DEFAULT_PASS = "3067869"; // 預設主頁面管理者密碼
 
         // 時間格式化工具 (YYYY-MM-DD HH:mm:ss)
         function formatDate(timestamp) {
@@ -638,6 +649,17 @@
             if(el) el.innerText = formatDate(Date.now());
         }
         setInterval(updateClock, 1000);
+
+        // 管理員主頁面登入驗證
+        function loginAdmin() {
+            const pass = document.getElementById('inputAdminPass').value.trim();
+            if (pass === ADMIN_DEFAULT_PASS) {
+                document.getElementById('adminLoginCard').style.display = 'none';
+                document.getElementById('adminContentArea').style.display = 'block';
+            } else {
+                alert("管理員密碼錯誤！");
+            }
+        }
 
         // 頁面切換機制
         function switchView(viewName) {
@@ -717,7 +739,7 @@
             const totalCells = parseInt(document.getElementById('totalCount').value) || 36;
 
             if(!password) {
-                alert("請務必設定房間密碼！");
+                alert("請務必設定玩家頁連線密碼！");
                 return;
             }
 
@@ -809,9 +831,34 @@
                     const paper = document.createElement('div');
                     paper.className = 'paper';
                     paper.innerText = cell.id;
+                    // 管理者/設定者可自由手動戳獎
+                    paper.onclick = () => handleAdminPoke(cell.id - 1, cell);
                     cellEl.appendChild(paper);
                 }
                 pokeBox.appendChild(cellEl);
+            });
+        }
+
+        // 管理者主頁面自由戳獎
+        function handleAdminPoke(index, cell) {
+            if (cell.isPoked) return;
+            
+            const winnerName = prompt(`【主控手動開獎】您點擊了第 ${cell.id} 格\n請輸入得獎者名字或備註：`, "管理者代抽");
+            if (winnerName === null) return; // 取消操作
+
+            const finalWinner = winnerName.trim() || "管理者代抽";
+
+            db.ref(`sharedPokeGame/cells/${index}`).update({
+                isPoked: true,
+                winner: finalWinner,
+                pokedAt: Date.now()
+            }).then(() => {
+                const isTurtle = cell.prize.includes("烏龜");
+                if (isTurtle) {
+                    alert(`第 ${cell.id} 格開獎完成：🐢 烏龜 (${finalWinner})`);
+                } else {
+                    alert(`第 ${cell.id} 格開獎完成：🎉 ${cell.prize} (${finalWinner})`);
+                }
             });
         }
 
