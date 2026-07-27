@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>懷舊戳戳樂</title>
+    <title>懷舊戳戳樂 - 多人同步版</title>
     <!-- 引入 html2canvas 截圖函式庫 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- 引入 Firebase SDK (Compat 版本) -->
@@ -88,7 +88,18 @@
         }
 
         .input-group input[type="text"], 
-        .input-group input[type="password"],
+        .input-group input[type="password"] {
+            flex-grow: 1;
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            min-width: 0;
+            height: 36px;
+            user-select: text;
+        }
+
+        /* 修正：將時間輸入框的日曆圖示移至左側 */
         .input-group input[type="datetime-local"] {
             flex-grow: 1;
             padding: 6px 8px;
@@ -98,6 +109,8 @@
             min-width: 0;
             height: 36px;
             user-select: text;
+            direction: rtl; /* 翻轉內部佈局，使 picker 按鈕出現在最左邊 */
+            text-align: left;
         }
 
         .input-group input[type="number"] {
@@ -490,7 +503,6 @@
         <!-- 主頁面登入卡片 -->
         <div id="adminLoginCard" class="login-card">
             <h2>🔑 管理員登入</h2>
-            <!-- 修正：無提示預設密碼 -->
             <input type="password" id="inputAdminPass" placeholder="請輸入主控密碼">
             <button class="btn-apply" onclick="loginAdmin()">進入管理後台</button>
         </div>
@@ -500,14 +512,15 @@
             <div class="config-panel">
                 <h3>⚙️ 遊戲設定 (主控面版)</h3>
                 <div class="input-group">
-                    <!-- 修正：時間挑選器移至最上方 -->
-                    <div class="input-row">
-                        <label for="endTime">⏳ 結束時間：</label>
-                        <input type="datetime-local" id="endTime">
-                    </div>
+                    <!-- 1. 活動名稱 -->
                     <div class="input-row">
                         <label for="eventName">活動名稱：</label>
                         <input type="text" id="eventName" placeholder="例如：嬌嬌">
+                    </div>
+                    <!-- 2. 修正：結束時間排在活動名稱下方 -->
+                    <div class="input-row">
+                        <label for="endTime">⏳ 結束時間：</label>
+                        <input type="datetime-local" id="endTime">
                     </div>
                     <div class="input-row">
                         <label for="roomPassword">🔑 玩家頁連線密碼：</label>
@@ -833,7 +846,6 @@
                     const paper = document.createElement('div');
                     paper.className = 'paper';
                     paper.innerText = cell.id;
-                    // 修正：代抽不彈窗提示，直接帶入管理者代抽並開獎
                     paper.onclick = () => handleAdminPoke(cell.id - 1, cell);
                     cellEl.appendChild(paper);
                 }
