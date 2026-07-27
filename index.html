@@ -482,7 +482,7 @@
             <div class="input-group">
                 <div class="input-row">
                     <label for="eventName">活動名稱：</label>
-                    <input type="text" id="eventName" placeholder="例如：小寶愛蕉">
+                    <input type="text" id="eventName" placeholder="例如：嬌嬌">
                 </div>
                 <div class="input-row">
                     <label for="roomPassword">🔑 房間密碼：</label>
@@ -490,7 +490,7 @@
                 </div>
                 <div class="input-row">
                     <label for="totalCount">總格子數量：</label>
-                    <input type="number" id="totalCount" value="20" min="5" step="1">
+                    <input type="number" id="totalCount" value="36" min="5" step="1">
                 </div>
                 <div class="input-row">
                     <label for="eventNote">備註說明：</label>
@@ -539,7 +539,7 @@
             </div>
             <div class="poke-box" id="mainPokeBox"></div>
             <div class="footer-row">
-                <div class="note-display" id="noteDisplay"></div>
+                <div class="note-display" id="noteDisplay">※ 每人限抽一次，號碼重複者棄權 ※</div>
                 <div class="copyright-display">©2026乳蕉四妻🐸</div>
             </div>
         </div>
@@ -579,7 +579,7 @@
                 <div class="event-title" id="playerEventTitle"></div>
                 <div class="poke-box" id="playerPokeBox"></div>
                 <div class="footer-row">
-                    <div class="note-display" id="playerNoteDisplay"></div>
+                    <div class="note-display" id="playerNoteDisplay">※ 每人限抽一次，號碼重複者棄權 ※</div>
                     <div class="copyright-display">©2026乳蕉四妻🐸</div>
                 </div>
             </div>
@@ -606,14 +606,24 @@
         let currentGameData = null;
         let activeMode = 'A';
         let currentPlayerName = "";
-        let hasPokedInThisSession = false;
+
+        // 時間格式化工具 (YYYY-MM-DD HH:mm:ss)
+        function formatDate(timestamp) {
+            if (!timestamp) return "-";
+            const date = new Date(timestamp);
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            const hh = String(date.getHours()).padStart(2, '0');
+            const min = String(date.getMinutes()).padStart(2, '0');
+            const ss = String(date.getSeconds()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+        }
 
         // 時鐘功能
         function updateClock() {
-            const now = new Date();
-            const timeString = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
             const el = document.getElementById('clock');
-            if(el) el.innerText = timeString;
+            if(el) el.innerText = formatDate(Date.now());
         }
         setInterval(updateClock, 1000);
 
@@ -673,7 +683,7 @@
             const eventName = document.getElementById('eventName').value.trim();
             const password = document.getElementById('roomPassword').value.trim();
             const note = document.getElementById('eventNote').value.trim();
-            const totalCells = parseInt(document.getElementById('totalCount').value) || 20;
+            const totalCells = parseInt(document.getElementById('totalCount').value) || 36;
 
             if(!password) {
                 alert("請務必設定房間密碼！");
@@ -719,7 +729,6 @@
 
             gameRef.set(gamePayload).then(() => {
                 alert("全新同步戳戳樂已建立！");
-                localStorage.removeItem("hasPoked_game"); // 清除本地抽獎鎖定
             });
         }
 
@@ -736,7 +745,6 @@
 
         // 渲染主控頁面
         function renderMainBoard(data) {
-            // 標題與備註
             const titleEl = document.getElementById('eventTitleDisplay');
             if (data.eventName) {
                 titleEl.innerText = "🍌 " + data.eventName + " 戳戳樂 🍌";
@@ -745,12 +753,10 @@
 
             document.getElementById('noteDisplay').innerText = data.note ? "※ " + data.note + " ※" : "";
 
-            // 計算剩餘大獎
             const totalBigPrizes = data.cells.filter(c => !c.prize.includes("烏龜")).length;
             const revealedBigPrizes = data.cells.filter(c => c.isPoked && !c.prize.includes("烏龜")).length;
             document.getElementById('remainingPrizesCount').innerText = `${Math.max(0, totalBigPrizes - revealedBigPrizes)} / ${totalBigPrizes}`;
 
-            // 渲染格子
             const pokeBox = document.getElementById('mainPokeBox');
             pokeBox.innerHTML = "";
 
@@ -788,8 +794,8 @@
             const pokeBox = document.getElementById('playerPokeBox');
             pokeBox.innerHTML = "";
 
-            // 檢查玩家是否已點選過
-            const hasPoked = localStorage.getItem(`hasPoked_${data.updatedAt}`) === "true";
+            // 檢查該玩家名稱是否已經戳過
+            const hasPoked = data.cells.some(c => c.isPoked && c.winner === currentPlayerName);
             const statusTag = document.getElementById('playerStatusTag');
             
             if (hasPoked) {
@@ -828,22 +834,26 @@
                 alert("請先登入名字！");
                 return;
             }
-            if (hasPoked) {
-                alert("您已經戳過號碼囉！每人限戳一次。");
+            
+            // 雙重驗證：檢查全域資料庫中此玩家名字是否已存在
+            const isNameAlreadyPoked = currentGameData.cells.some(c => c.isPoked && c.winner === currentPlayerName);
+            
+            if (hasPoked || isNameAlreadyPoked) {
+                alert(`玩家【${currentPlayerName}】已經戳過號碼囉！每人限戳一次。`);
                 return;
             }
+
             if (cell.isPoked) {
                 alert("這一格已經被別人戳破囉！請選擇其他格子。");
                 return;
             }
 
-            // 更新 Firebase 資料
+            // 更新 Firebase 資料庫 (包含 timestamp)
             db.ref(`sharedPokeGame/cells/${index}`).update({
                 isPoked: true,
                 winner: currentPlayerName,
                 pokedAt: Date.now()
             }).then(() => {
-                localStorage.setItem(`hasPoked_${currentGameData.updatedAt}`, "true");
                 const isTurtle = cell.prize.includes("烏龜");
                 if (isTurtle) {
                     alert(`🐢 沒中獎～ 戳中了烏龜！`);
@@ -875,9 +885,12 @@
             document.getElementById('displayName').innerText = currentPlayerName;
             document.getElementById('playerLoginCard').style.display = 'none';
             document.getElementById('playerGameArea').style.display = 'block';
+
+            // 登入後即時渲染玩家畫面
+            if(currentGameData) renderPlayerBoard(currentGameData);
         }
 
-        // 渲染得獎表格
+        // 渲染得獎表格（包含時間）
         function renderWinnerTable(data) {
             const container = document.getElementById('winnerTableContainer');
             const pokedCells = data.cells.filter(c => c.isPoked);
@@ -891,9 +904,10 @@
                 <table class="winner-table">
                     <thead>
                         <tr>
-                            <th style="width: 25%;">欄位號碼</th>
-                            <th style="width: 45%;">獎品內容</th>
-                            <th style="width: 30%;">得獎者</th>
+                            <th style="width: 15%;">欄位</th>
+                            <th style="width: 35%;">獎品內容</th>
+                            <th style="width: 25%;">得獎者</th>
+                            <th style="width: 25%;">開獎時間</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -906,6 +920,7 @@
                         <td><strong>第 ${item.id} 格</strong></td>
                         <td>${item.prize}</td>
                         <td style="color: ${isTurtle ? '#607d8b' : '#0d47a1'}; font-weight: bold;">${item.winner}</td>
+                        <td style="color: #666; font-size: 0.75rem;">${formatDate(item.pokedAt)}</td>
                     </tr>
                 `;
             });
@@ -914,7 +929,7 @@
             container.innerHTML = html;
         }
 
-        // 複製得獎列表（規則：有得獎全部列出後，再列出未得獎名單）
+        // 複製得獎列表（包含開獎時間）
         async function copyWinnerList() {
             if (!currentGameData) return;
             const pokedCells = currentGameData.cells.filter(c => c.isPoked);
@@ -924,7 +939,6 @@
                 return;
             }
 
-            // 分離「中獎名單」與「未得獎(烏龜)名單」
             const winners = pokedCells.filter(c => !c.prize.includes("烏龜"));
             const turtles = pokedCells.filter(c => c.prize.includes("烏龜"));
 
@@ -937,7 +951,7 @@
 
             if (winners.length > 0) {
                 winners.forEach(item => {
-                    text += `• 第 ${item.id} 格: ${item.prize} ➔ ${item.winner}\n`;
+                    text += `• 第 ${item.id} 格: ${item.prize} ➔ ${item.winner} (${formatDate(item.pokedAt)})\n`;
                 });
             } else {
                 text += `(尚無中獎紀錄)\n`;
@@ -946,7 +960,7 @@
             text += `\n🐢【未得獎/烏龜名單】\n`;
             if (turtles.length > 0) {
                 turtles.forEach(item => {
-                    text += `• 第 ${item.id} 格: 烏龜 ➔ ${item.winner}\n`;
+                    text += `• 第 ${item.id} 格: 烏龜 ➔ ${item.winner} (${formatDate(item.pokedAt)})\n`;
                 });
             } else {
                 text += `(尚無未得獎紀錄)\n`;
