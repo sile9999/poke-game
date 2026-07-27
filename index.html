@@ -848,7 +848,7 @@
                 return;
             }
 
-            // 更新 Firebase 資料庫 (包含 timestamp)
+            // 更新 Firebase 資料庫
             db.ref(`sharedPokeGame/cells/${index}`).update({
                 isPoked: true,
                 winner: currentPlayerName,
@@ -886,11 +886,10 @@
             document.getElementById('playerLoginCard').style.display = 'none';
             document.getElementById('playerGameArea').style.display = 'block';
 
-            // 登入後即時渲染玩家畫面
             if(currentGameData) renderPlayerBoard(currentGameData);
         }
 
-        // 渲染得獎表格（包含時間）
+        // 渲染得獎表格
         function renderWinnerTable(data) {
             const container = document.getElementById('winnerTableContainer');
             const pokedCells = data.cells.filter(c => c.isPoked);
@@ -929,7 +928,7 @@
             container.innerHTML = html;
         }
 
-        // 複製得獎列表（包含開獎時間）
+        // 複製得獎列表（時間僅顯示在虛線上方一次）
         async function copyWinnerList() {
             if (!currentGameData) return;
             const pokedCells = currentGameData.cells.filter(c => c.isPoked);
@@ -944,14 +943,16 @@
 
             const eventName = currentGameData.eventName;
             const titleText = eventName ? `${eventName}戳戳樂 - 開獎名單` : "戳戳樂開獎名單";
+            const currentTimeStr = formatDate(Date.now());
 
             let text = `🏆【${titleText}】🏆\n`;
+            text += `🕒 時間：${currentTimeStr}\n`;
             text += `-----------------------------\n`;
             text += `🎁【中獎名單】\n`;
 
             if (winners.length > 0) {
                 winners.forEach(item => {
-                    text += `• 第 ${item.id} 格: ${item.prize} ➔ ${item.winner} (${formatDate(item.pokedAt)})\n`;
+                    text += `• 第 ${item.id} 格: ${item.prize} ➔ ${item.winner}\n`;
                 });
             } else {
                 text += `(尚無中獎紀錄)\n`;
@@ -960,7 +961,7 @@
             text += `\n🐢【未得獎/烏龜名單】\n`;
             if (turtles.length > 0) {
                 turtles.forEach(item => {
-                    text += `• 第 ${item.id} 格: 烏龜 ➔ ${item.winner} (${formatDate(item.pokedAt)})\n`;
+                    text += `• 第 ${item.id} 格: 烏龜 ➔ ${item.winner}\n`;
                 });
             } else {
                 text += `(尚無未得獎紀錄)\n`;
