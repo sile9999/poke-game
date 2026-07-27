@@ -638,6 +638,15 @@
 
             <div class="capture-area">
                 <div class="event-title" id="playerEventTitle"></div>
+                
+                <!-- 新增：玩家頁面的時間與剩餘獎項區塊 -->
+                <div class="toolbar">
+                    <div class="time-box">
+                        <div>🕒 <span id="playerClock">載入時間...</span></div>
+                        <div>🎁 剩餘大獎：<span class="prizes-count" id="playerRemainingPrizesCount">0 / 0</span></div>
+                    </div>
+                </div>
+
                 <div class="poke-box" id="playerPokeBox"></div>
                 <div class="footer-row">
                     <div class="note-display" id="playerNoteDisplay">※ 每人限抽一次 ※</div>
@@ -694,10 +703,13 @@
             return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
         }
 
-        // 時鐘功能
+        // 時鐘功能 (同步更新管理員與玩家介面)
         function updateClock() {
-            const el = document.getElementById('clock');
-            if(el) el.innerText = formatDate(Date.now());
+            const nowFormatted = formatDate(Date.now());
+            const adminEl = document.getElementById('clock');
+            const playerEl = document.getElementById('playerClock');
+            if(adminEl) adminEl.innerText = nowFormatted;
+            if(playerEl) playerEl.innerText = nowFormatted;
         }
         setInterval(updateClock, 1000);
 
@@ -936,6 +948,14 @@
             }
 
             document.getElementById('playerNoteDisplay').innerText = data.note ? "※ " + data.note + " ※" : "";
+
+            // 更新玩家頁面剩餘大獎數量
+            const totalBigPrizes = data.cells.filter(c => !c.prize.includes("烏龜")).length;
+            const revealedBigPrizes = data.cells.filter(c => c.isPoked && !c.prize.includes("烏龜")).length;
+            const playerRemEl = document.getElementById('playerRemainingPrizesCount');
+            if (playerRemEl) {
+                playerRemEl.innerText = `${Math.max(0, totalBigPrizes - revealedBigPrizes)} / ${totalBigPrizes}`;
+            }
 
             const pokeBox = document.getElementById('playerPokeBox');
             pokeBox.innerHTML = "";
