@@ -99,7 +99,7 @@
             user-select: text;
         }
 
-        /* 修正 1：將時間輸入框的日曆選擇器圖示移至最左側 */
+        /* 時間輸入框樣式 */
         .input-group input[type="datetime-local"] {
             flex-grow: 1;
             padding: 6px 8px;
@@ -110,7 +110,7 @@
             height: 36px;
             user-select: text;
             display: flex;
-            flex-direction: row-reverse; /* 將日曆圖示翻轉至左邊 */
+            flex-direction: row-reverse;
             justify-content: flex-end;
             align-items: center;
         }
@@ -257,10 +257,12 @@
             margin-top: 12px;
             width: 100%;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .btn-action {
             flex: 1;
+            min-width: 140px;
             max-width: 250px;
             background-color: #0288d1;
             color: white;
@@ -384,7 +386,6 @@
             color: #607d8b;
         }
 
-        /* 修正 2：烏龜圖示放大 */
         .turtle-icon {
             font-size: 1.6rem;
             line-height: 1;
@@ -576,6 +577,8 @@
                 <div class="button-group" style="margin-top: 12px;">
                     <a href="#player" target="_blank" class="btn-action btn-orange">🚀 開啟玩家連線頁</a>
                     <button class="btn-action btn-purple" id="copyPlayerUrlBtn" onclick="copyPlayerUrl()">🔗 複製玩家頁面網址</button>
+                    <!-- 新增：複製密碼備註按鈕 -->
+                    <button class="btn-action btn-orange" id="copyPassNoteBtn" onclick="copyPassNote()">🔑 複製密碼備註</button>
                 </div>
             </div>
 
@@ -716,6 +719,24 @@
             }
         }
 
+        // 新增：複製密碼與備註說明
+        async function copyPassNote() {
+            // 優先取得全域資料，若尚無全域資料則讀取輸入框
+            const pass = (currentGameData && currentGameData.password) ? currentGameData.password : document.getElementById('roomPassword').value.trim();
+            const note = (currentGameData && currentGameData.note !== undefined) ? currentGameData.note : document.getElementById('eventNote').value.trim();
+
+            const textToCopy = `🔑 房間密碼：${pass}\n📝 備註說明：${note}`;
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                const btn = document.getElementById('copyPassNoteBtn');
+                btn.innerText = "✅ 密碼備註已複製！";
+                setTimeout(() => btn.innerText = "🔑 複製密碼備註", 2000);
+            } catch (err) {
+                alert("複製失敗，內容如下：\n" + textToCopy);
+            }
+        }
+
         // 監聽網址 Hash 切換
         window.onhashchange = function() {
             if(location.hash === '#player') switchView('player');
@@ -849,7 +870,6 @@
                 cellEl.className = `cell ${cell.isPoked ? (isTurtle ? 'turtle' : 'winning') : ''}`;
 
                 if (cell.isPoked) {
-                    // 修正 2：若有 winner 名字才渲染 (管理者代抽未設 winner 則不顯示藍色名字框)
                     const winnerHtml = cell.winner ? `<div class="winner-name">${cell.winner}</div>` : '';
 
                     if (isTurtle) {
@@ -868,13 +888,13 @@
             });
         }
 
-        // 管理者主頁面代抽 (修正 2：winner 給空字串，不顯示"管理者代抽")
+        // 管理者主頁面代抽
         function handleAdminPoke(index, cell) {
             if (cell.isPoked) return;
 
             db.ref(`sharedPokeGame/cells/${index}`).update({
                 isPoked: true,
-                winner: "", // 代抽不填寫名稱
+                winner: "",
                 pokedAt: Date.now()
             });
         }
