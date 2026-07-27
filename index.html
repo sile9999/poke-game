@@ -356,7 +356,7 @@
             }
         }
 
-        /* 戳開後的底色設定 */
+        /* 戳開後的基礎底色設定 */
         .cell {
             position: relative;
             aspect-ratio: 1;
@@ -376,12 +376,15 @@
             overflow: hidden;
         }
 
+        /* 得獎格：顯眼的亮金色漸層 + 亮眼邊框光芒 */
         .cell.winning {
-            background-color: #fffde7;
-            color: #c62828;
-            border: 2px solid #fbc02d;
+            background: linear-gradient(135deg, #fff9c4, #ffe082);
+            color: #b71c1c;
+            border: 2px solid #ffa000;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.6), inset 0 0 5px rgba(255, 255, 255, 0.8);
         }
 
+        /* 沒中獎（烏龜格）：柔和灰白 */
         .cell.turtle {
             background-color: #f1f3f4;
             color: #546e7a;
@@ -409,20 +412,20 @@
             text-overflow: ellipsis;
         }
 
-        /* 未開格 (封面) 樣式：修改為 Tiffany 藍漸層 */
+        /* 未開格 (封面) 樣式：Tiffany 藍漸層 */
         .paper {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #80deea, #26c6da); /* Tiffany 藍 / 薄荷綠漸層 */
+            background: linear-gradient(135deg, #80deea, #26c6da);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2.2rem;
             cursor: pointer;
-            border: 2px solid #00acc1; /* 深蒂芬妮藍邊框 */
+            border: 2px solid #00acc1;
             border-radius: 5px;
             box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.7), 0 3px 6px rgba(0,0,0,0.2);
             transition: transform 0.15s ease, filter 0.2s;
