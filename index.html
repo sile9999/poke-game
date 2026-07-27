@@ -577,7 +577,7 @@
                 <div class="button-group" style="margin-top: 12px;">
                     <a href="#player" target="_blank" class="btn-action btn-orange">🚀 開啟玩家連線頁</a>
                     <button class="btn-action btn-purple" id="copyPlayerUrlBtn" onclick="copyPlayerUrl()">🔗 複製玩家頁面網址</button>
-                    <!-- 新增：複製密碼備註按鈕 -->
+                    <!-- 複製密碼備註按鈕 -->
                     <button class="btn-action btn-orange" id="copyPassNoteBtn" onclick="copyPassNote()">🔑 複製密碼備註</button>
                 </div>
             </div>
@@ -673,6 +673,18 @@
             return `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
         }
 
+        // 時間格式化工具 (不含秒 YYYY-MM-DD HH:mm)
+        function formatShortDate(timestamp) {
+            if (!timestamp) return "";
+            const date = new Date(timestamp);
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            const hh = String(date.getHours()).padStart(2, '0');
+            const min = String(date.getMinutes()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+        }
+
         // 時鐘功能
         function updateClock() {
             const el = document.getElementById('clock');
@@ -719,13 +731,26 @@
             }
         }
 
-        // 新增：複製密碼與備註說明
+        // 複製密碼、結束時間與備註說明
         async function copyPassNote() {
-            // 優先取得全域資料，若尚無全域資料則讀取輸入框
+            // 取得密碼
             const pass = (currentGameData && currentGameData.password) ? currentGameData.password : document.getElementById('roomPassword').value.trim();
+            
+            // 取得備註
             const note = (currentGameData && currentGameData.note !== undefined) ? currentGameData.note : document.getElementById('eventNote').value.trim();
 
-            const textToCopy = `🔑 房間密碼：${pass}\n📝 備註說明：${note}`;
+            // 取得結束時間
+            let endStr = "未設定";
+            if (currentGameData && currentGameData.endTime) {
+                endStr = formatShortDate(currentGameData.endTime);
+            } else {
+                const rawTimeVal = document.getElementById('endTime').value;
+                if (rawTimeVal) {
+                    endStr = rawTimeVal.replace('T', ' ');
+                }
+            }
+
+            const textToCopy = `🔑 房間密碼：${pass}\n⏰ 結束時間：${endStr}\n📝 備註說明：${note}`;
 
             try {
                 await navigator.clipboard.writeText(textToCopy);
