@@ -99,7 +99,7 @@
             user-select: text;
         }
 
-        /* 修正：將時間輸入框的日曆圖示移至左側 */
+        /* 修正 1：將時間輸入框的日曆選擇器圖示移至最左側 */
         .input-group input[type="datetime-local"] {
             flex-grow: 1;
             padding: 6px 8px;
@@ -109,8 +109,16 @@
             min-width: 0;
             height: 36px;
             user-select: text;
-            direction: rtl; /* 翻轉內部佈局，使 picker 按鈕出現在最左邊 */
-            text-align: left;
+            display: flex;
+            flex-direction: row-reverse; /* 將日曆圖示翻轉至左邊 */
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .input-group input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            margin-right: 8px;
+            margin-left: 0;
+            cursor: pointer;
         }
 
         .input-group input[type="number"] {
@@ -376,6 +384,12 @@
             color: #607d8b;
         }
 
+        /* 修正 2：烏龜圖示放大 */
+        .turtle-icon {
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+
         .winner-name {
             color: #0d47a1;
             font-size: 0.7rem;
@@ -512,12 +526,10 @@
             <div class="config-panel">
                 <h3>⚙️ 遊戲設定 (主控面版)</h3>
                 <div class="input-group">
-                    <!-- 1. 活動名稱 -->
                     <div class="input-row">
                         <label for="eventName">活動名稱：</label>
                         <input type="text" id="eventName" placeholder="例如：嬌嬌">
                     </div>
-                    <!-- 2. 修正：結束時間排在活動名稱下方 -->
                     <div class="input-row">
                         <label for="endTime">⏳ 結束時間：</label>
                         <input type="datetime-local" id="endTime">
@@ -837,10 +849,13 @@
                 cellEl.className = `cell ${cell.isPoked ? (isTurtle ? 'turtle' : 'winning') : ''}`;
 
                 if (cell.isPoked) {
+                    // 修正 2：若有 winner 名字才渲染 (管理者代抽未設 winner 則不顯示藍色名字框)
+                    const winnerHtml = cell.winner ? `<div class="winner-name">${cell.winner}</div>` : '';
+
                     if (isTurtle) {
-                        cellEl.innerHTML = `<div>🐢</div><div class="winner-name">${cell.winner}</div>`;
+                        cellEl.innerHTML = `<div class="turtle-icon">🐢</div>${winnerHtml}`;
                     } else {
-                        cellEl.innerHTML = `<div style="font-weight:bold;">${cell.prize}</div><div class="winner-name">${cell.winner}</div>`;
+                        cellEl.innerHTML = `<div style="font-weight:bold;">${cell.prize}</div>${winnerHtml}`;
                     }
                 } else {
                     const paper = document.createElement('div');
@@ -853,13 +868,13 @@
             });
         }
 
-        // 管理者主頁面代抽 (免彈窗直接開獎)
+        // 管理者主頁面代抽 (修正 2：winner 給空字串，不顯示"管理者代抽")
         function handleAdminPoke(index, cell) {
             if (cell.isPoked) return;
 
             db.ref(`sharedPokeGame/cells/${index}`).update({
                 isPoked: true,
-                winner: "管理者代抽",
+                winner: "", // 代抽不填寫名稱
                 pokedAt: Date.now()
             });
         }
@@ -888,7 +903,7 @@
             const isExpired = data.endTime && Date.now() > data.endTime;
 
             // 檢查該玩家名稱是否已經戳過
-            const hasPoked = data.cells.some(c => c.isPoked && c.winner === currentPlayerName);
+            const hasPoked = currentPlayerName ? data.cells.some(c => c.isPoked && c.winner === currentPlayerName) : false;
             const statusTag = document.getElementById('playerStatusTag');
             
             if (isExpired) {
@@ -908,10 +923,12 @@
                 cellEl.className = `cell ${cell.isPoked ? (isTurtle ? 'turtle' : 'winning') : ''}`;
 
                 if (cell.isPoked) {
+                    const winnerHtml = cell.winner ? `<div class="winner-name">${cell.winner}</div>` : '';
+
                     if (isTurtle) {
-                        cellEl.innerHTML = `<div>🐢</div><div class="winner-name">${cell.winner}</div>`;
+                        cellEl.innerHTML = `<div class="turtle-icon">🐢</div>${winnerHtml}`;
                     } else {
-                        cellEl.innerHTML = `<div style="font-weight:bold;">${cell.prize}</div><div class="winner-name">${cell.winner}</div>`;
+                        cellEl.innerHTML = `<div style="font-weight:bold;">${cell.prize}</div>${winnerHtml}`;
                     }
                 } else {
                     const paper = document.createElement('div');
@@ -1013,11 +1030,12 @@
 
             pokedCells.forEach(item => {
                 const isTurtle = item.prize.includes("烏龜");
+                const displayName = item.winner ? item.winner : "(管理者代抽)";
                 html += `
                     <tr>
                         <td><strong>第 ${item.id} 格</strong></td>
                         <td>${item.prize}</td>
-                        <td style="color: ${isTurtle ? '#607d8b' : '#0d47a1'}; font-weight: bold;">${item.winner}</td>
+                        <td style="color: ${isTurtle ? '#607d8b' : '#0d47a1'}; font-weight: bold;">${displayName}</td>
                         <td style="color: #666; font-size: 0.75rem;">${formatDate(item.pokedAt)}</td>
                     </tr>
                 `;
@@ -1051,7 +1069,8 @@
 
             if (winners.length > 0) {
                 winners.forEach(item => {
-                    text += `• 第 ${item.id} 格: ${item.prize} ➔ ${item.winner}\n`;
+                    const name = item.winner ? item.winner : "管理者代抽";
+                    text += `• 第 ${item.id} 格: ${item.prize} ➔ ${name}\n`;
                 });
             } else {
                 text += `(尚無中獎紀錄)\n`;
@@ -1060,7 +1079,8 @@
             text += `\n🐢【未得獎/烏龜名單】\n`;
             if (turtles.length > 0) {
                 turtles.forEach(item => {
-                    text += `• 第 ${item.id} 格: 烏龜 ➔ ${item.winner}\n`;
+                    const name = item.winner ? item.winner : "管理者代抽";
+                    text += `• 第 ${item.id} 格: 烏龜 ➔ ${name}\n`;
                 });
             } else {
                 text += `(尚無未得獎紀錄)\n`;
