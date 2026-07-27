@@ -335,7 +335,7 @@
             font-weight: 800;
         }
 
-        /* 戳戳樂網格外框 (改為熱情軟糖紅底) */
+        /* 戳戳樂網格外框 */
         .poke-box {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(max(70px, calc(10% - 6px)), 1fr));
@@ -376,14 +376,12 @@
             overflow: hidden;
         }
 
-        /* 中獎格子底色 (極淺溫暖金黃色) */
         .cell.winning {
             background-color: #fffde7;
             color: #c62828;
             border: 2px solid #fbc02d;
         }
 
-        /* 未中獎/烏龜格子底色 (柔軟淺灰藍) */
         .cell.turtle {
             background-color: #f1f3f4;
             color: #546e7a;
@@ -411,20 +409,20 @@
             text-overflow: ellipsis;
         }
 
-        /* 氣球封面樣式 (改為柔和淺色系 + 氣球極大化) */
+        /* 氣球/ Emoji 封面樣式 */
         .paper {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #fff0f3, #ffe3e8); /* 柔和淺粉紅背景 */
+            background: linear-gradient(135deg, #fff0f3, #ffe3e8);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.2rem; /* 氣球放大！ */
+            font-size: 2.2rem; /* Emoji 特大化 */
             cursor: pointer;
-            border: 1.5px dashed #ffb74d; /* 溫馨金黃虛線邊框 */
+            border: 1.5px dashed #ffb74d;
             border-radius: 5px;
             transition: transform 0.15s ease, background 0.2s;
             user-select: none;
@@ -432,7 +430,7 @@
         }
 
         .paper:hover {
-            transform: scale(1.05); /* 滑鼠懸停微放大 */
+            transform: scale(1.08);
             background: linear-gradient(135deg, #ffe3e8, #ffd1d9);
         }
 
@@ -660,6 +658,14 @@
         const db = firebase.database();
         const gameRef = db.ref("sharedPokeGame");
 
+        // 全域可用的繽紛 Emoji 庫（包含氣球、水果、甜點、可愛動物等）
+        const EMOJI_POOL = [
+            '🎈', '🎈', '🎁', '🍓', '🍑', '🍒', '🥑', '🍩', 
+            '🧁', '🍬', '🍭', '🧸', '🐣', '🐶', '🐱', '🐰', 
+            '🦊', '🐼', '🐸', '⭐', '🌟', '🌈', '🍦', '🎨',
+            '🔮', '🎪', '🎯', '🎰', '🚀', '🌺', '🌻', '🍎'
+        ];
+
         // 全域變數
         let currentGameData = null;
         let activeMode = 'A';
@@ -829,13 +835,18 @@
             if (prizeList.length > totalCells) prizeList = prizeList.slice(0, totalCells);
 
             const shuffledPrizes = shuffle(prizeList);
+            
+            // 隨機打亂 Emoji 陣列
+            const shuffledEmojis = shuffle([...EMOJI_POOL]);
 
             const cellsData = shuffledPrizes.map((prize, idx) => ({
                 id: idx + 1,
                 prize: prize,
                 isPoked: false,
                 winner: "",
-                pokedAt: 0
+                pokedAt: 0,
+                // 為每一格配對隨機的 Emoji 圖案
+                coverEmoji: shuffledEmojis[idx % shuffledEmojis.length]
             }));
 
             const gamePayload = {
@@ -897,7 +908,8 @@
                 } else {
                     const paper = document.createElement('div');
                     paper.className = 'paper';
-                    paper.innerHTML = '🎈'; // 大氣球圖示
+                    // 顯示預設或隨機配對的 Emoji (若舊版無該欄位則降級顯示氣球)
+                    paper.innerHTML = cell.coverEmoji || '🎈';
                     paper.onclick = () => handleAdminPoke(cell.id - 1, cell);
                     cellEl.appendChild(paper);
                 }
@@ -972,7 +984,8 @@
                 } else {
                     const paper = document.createElement('div');
                     paper.className = 'paper';
-                    paper.innerHTML = '🎈'; // 大氣球圖示
+                    // 顯示預設或隨機配對的 Emoji
+                    paper.innerHTML = cell.coverEmoji || '🎈';
                     paper.onclick = () => handlePlayerPoke(cell.id - 1, cell, hasPoked, isExpired, hasBigPrizesLeft);
                     cellEl.appendChild(paper);
                 }
@@ -1005,7 +1018,7 @@
             }
 
             if (cell.isPoked) {
-                alert("這一格已經被別人戳破囉！請選擇其他氣球。");
+                alert("這一格已經被別人戳破囉！請選擇其他圖案。");
                 return;
             }
 
