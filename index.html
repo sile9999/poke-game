@@ -412,7 +412,7 @@
             text-overflow: ellipsis;
         }
 
-        /* 未開格 (封面) 樣式：Tiffany 藍漸層 + 小鴨圖案 */
+        /* 未開格 (封面) 樣式：Tiffany 藍漸層 + 白色問號 */
         .paper {
             position: absolute;
             top: 0;
@@ -423,6 +423,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 1.8rem;
+            color: #ffffff;
             cursor: pointer;
             border: 2px solid #00acc1;
             border-radius: 5px;
@@ -430,16 +432,6 @@
             transition: transform 0.15s ease, filter 0.2s;
             user-select: none;
             z-index: 2;
-            padding: 4px;
-        }
-
-        /* 未開格的小鴨圖片 */
-        .paper img.duck-icon {
-            width: 80%;
-            height: 80%;
-            object-fit: contain;
-            filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.2));
-            pointer-events: none;
         }
 
         .paper:hover {
@@ -664,9 +656,6 @@
     </div>
 
     <script>
-        // ==================== 小鴨 Base64 圖片資料 ====================
-        const DUCK_IMAGE_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAAAXNSR0IArs4c6QAAHsBJREFUeF7tXQeAFEX2/3p6AnJkCSo5yjlnyVFByf44y4msIKCAKIiogAhyzhmEJSfJOSuSByRnyVFATv3fV/Nu7/bd7U53T09PT8/Xf2A4unq/eu/Vq1f1Xs2j4S3XAs6iXh5/aXoFpAxg136mDEDfPqE/BfQLOAtI/4AilM12An34q/2+1N4m17eKtgF0/lB2H94pA8p3x/oQxllAypcI3oByf98yC/6A8vI2jI8A/u5eP6/1D/Mv424+X2x7jS043743X+1v7C8XQOo/vN179A9j901A/yG+m177N9Yv969vD5f/2wXo230N4+19Nne/pM5jT/8O5i0s3p5I3/m+zffS3o3v5v7p/Yx32Xo5x4f7S+IeO6+b+A8g/gEknbftA9D6v/MByJ34b9O34I2mewLp1/2O+2UeXz6Y/3u8f203+A3oRvf3q751X93fXy7X/s03y/3/36q3u5f/4v53Xjvv+1e+9+2h/hK5/e3yvhOaA10D4Lsf6s33G1S96eA4A+rP2f5s26x1E/t/s2/mvhG8m93/3+v+Rvf4fvXv7w/pGgO/mN3P/R5mB5k7A7z3I3yvd//uN15jG++1X+363v1e5jE0D/m28TevN3Mbgf8d1m6A/AfgLpX/4mH/M3f3/3oK2f31t3y064+G+Y/S/x4/3T6p22a0v8/eCfw2f3fvv+n3s/3/5kIft3033S83fO9+uUf/pA5x71/xI8B/P/c/m/17G6A5x/aP0f353BngG1v/+X6vI/z/HrfPuv253aD1n83/B1u/c/7S+JvX3R415+/v4123S9i+/y9oB1G3B+Ufw2a3D3i5f+Eer+u1/T51x3s5I/w5gG3Gk/vB7tX5Dvxvj/8/1O484/eOq+4b7p83Pef0824S3mve/eUe1p/L/Q3jHkbf5v/X5p9A+Ieg737o/c/mP83d3Lffp998C4sfeP64P/wG3f/v7/y4u8b6f3a/sL/48e+uI/4e4O3jP6Z7f/n8u/pvdve/56v3e3f/s33x21a4P0/ffl3/8feN/1xL/G/pXyZ331P/+p713+/m/rn9I9x3/EfvP17v3+SfeHOfk/5f/vMbg/7n9M3/F7/8a/+L4d/U1f9j8ePev8e/f+m+/vK/I5p/Xn/x5/3f6C+Nf2s30u1v5//kvrL5//k68XqT2w2W/9/yv92fC4r/f5n77XkP3o0i/O8e3j/m331x3/9+6e4/7v3fX309S/aXzr+p/7m3a77sT/w78N7Svf3+O2L/8H6z+M+lfg9/0y1e//u7f2u+X1b+3yO7f/m91//I/+7L75v4d//09//6t/eX4N4+fve/L+/p8/4/6Jvh9S3847n+3m9Xm7330d32v2/p/m+7v10O/zE8T//O3s//e3v7a9/9Dfa9v93e+v5v8y34A8Efvvu/9U3/f4IfrP53+P/903u7/G9Xm2e7//k4gP2L/mP/mP3L/sD4t+C/y9yD+9u93XvX+XvA23+/+d999330X23+2d4e1n34A/L3Tf2X4L88/A/p4X2P7v9wP8n/y/BvAvyX9a1/f3eA733y/8H3m34/9H+B4e91f1j8M8h34A+E+Dvf3vfB//P6p/aBf8d7b3e+ffm1v9X0vxf3r/wD/G8A/Df4D/a2v73v//8A/Bfg//B4b3/93/f+Af8C+P+317/63X2v/tA/AP5b14f4/6/f+1v1s+q33x3fX1/+/3X433/fXN4y/1/xP/L18T/1r44A0+0X3d23x/2vS3f/gXvv1f+vA/p39bf0r/92eXm7/+A/kGf4D9S33/7f+E9b3//o1X2d/g34A8A/sP+74L454V8f7//31/824D8R3/4L+90f8m3Aewb/kXzNfx7f91//fH1z/9XtfuB9v+72v/kP4T0p3/72X/19f+/+b/iL/4D/Xvf494L+wA0C4F+H+Dvf3v/x4e4D3g33+3j4v8/4H+L/4X+I/2t4++pvhfvv+f+974f2X94f8P//8c/P/oG9t3vf3783vjvu/T/iL2Hve3t/a3+O30N4e2x/L8/8G/T2G/sD/APx1/f/72f7e7fA++0e/8D7pP4H29v/m/qX3/7d23v//3eM++9/393+/i///4P8r/n/jve+vf+l/+vE+z8d3o3v//6+/f//+Ivf4f11/+3qH3f+H4T0I9/3/6T0j4v+/5f0z29A13+0//f0v5L/vf62/S/kP/73gPff//4C2534//n3t/+n/x/x7i7/3/P9974/8/yX9s/k/3m/xH/930n4P81/H//z3x+v8v431s84//X1v9P82//4//6e/O/x3j7x/f2//f//pD97+T/h7m/vf8n598+9A/3Xtf38m7uX0n9x/1f/n3b//j/gfyP5E/+5D727/6I/c3+4/+x//8S7X953mP7j2//3n3gfwP2v/O//p/s//y/h/w/B/mP/4l8X6U/f365m3+XfA/Bfg//P3q75e4/+bX/18R39s89vP8S5aP4y+Fvhvx///3P2s64Xp33z7S4l468v3f3f///2/u//p//wP5C7f6j/Nf98/p/k7jP0d2D4p/4eLg//M//3jH++S/+z334eL+//f5+/5//4P43394P2L4a+eL7rX35+z8D32X5z3D4148N0+I4J5J/n/b/4v9S/0/490n6t/+P+j+O/n/r99z0X/j7x/+2N//e/+/8A4D8D37T5f3+A/8S/I/B/j/8l6k4m/Afgvwv+P+5/hfe2n7z4r34/pP7S9j/Bf7P7v7S9/18T0534E2a4t0X212L8K2d250j2/u8z//fMvf4a3t//2J9i9+/A++C/pPyX/H/iL77u9e4Pq/2//l74/59+e/+1/+f7z9a93/v3iX4K6b3Gf3zff3199r31/0p4G931v/mP+f/4J8P9/3z2/94S35f2122v4K+m9f/+kX9k6a048k0m+j476M2s74Vd9/w5j/+T/qXp4b3874P6j+L+j3qX2/8n+3v1l7a/7x3j43S+e9X2z/5e6H7D+k33+7O31l8l+O/k4L7l87383u//H7+m/A++53/+s7/i/4f727x3v6v3iX5f/n/+4C8m/A93319808l+wvgv3P32/+59+2N8i8X1m82/+3/+sD5t3P32X1I43+H4/sX9h+031+2m0+/2f6n++y4f4f5t9h9wfgvyr9i8j6/a++O4p328//n7A++e/9/H4X3y+yv4P94/G+0/A+8f/M9G4E//m/7N/u/k+m+6X8p5E77x3+C0l/5/s3/zO+w3+C9U3+O817y9t/y//a//v+83vPz1+K6Z3P4n9t5432D6z7t71f2N+s9s+J2D5j/3N2H1f543x97v0A5q906v8l/z/2P+n+f5h8q+n/+N1E/xP/S3P/7z8P3/1j3i//b/e7A4384//54k//9b4L8/932z+g/+B2X4E3i9e+/oP/A/33r728G/N92f4G3s4e21/9m4j/i+C++m+t/+2n6l3e/v+5Xf0134f++4f6f7b3H6r/P234d7u3m///296b+D/k7p+k3+3e/+0b++4s/852I5r/t2H6X/f4K322f/+S53//E3//i1//C1d9/L2//f3G548//8f4E//u122f8U7T1H+B48//1/M336z7r7k4D+G/M9a909415B4u14f8t/S++d3/+H/qXq3kL1d/4S//8G+s4x8H9L6S1H//b534v//vP46+z0v3kH2/+S8C/J3X+y1E4S2k/5A/f/F4X0e84L4m6c+b9C2/o90b3v0j3f4D+e1P6M/2P/iL//qD8P2+i36N6d2H3P3X255n92L9q63//03//U/o3/32s95B/m/b9i9k3j//j+/e89/4//4f971c2L4//4f3/+93qf+/3H4p0s+1/L4F5y4E13//3254930f++f++T7D8K2r5c2G89/+K9r4q6b7m8G0/9X9+H++m/9v8e3f++4L515y/4k071y4I2S3G57//m+5/fP+06i1d072f5N3S2/a4I0A4A=";
-
         // ==================== 0. 防 F12 與盜取保護機制 ====================
         // 禁用右鍵選單
         document.addEventListener('contextmenu', function (e) {
@@ -675,18 +664,22 @@
 
         // 禁用常見開發者工具快捷鍵
         document.addEventListener('keydown', function (e) {
+            // 禁用 F12
             if (e.key === 'F12' || e.keyCode === 123) {
                 e.preventDefault();
                 return false;
             }
+            // 禁用 Ctrl+Shift+I / J / C (Mac: Cmd+Alt+I / J / C)
             if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) {
                 e.preventDefault();
                 return false;
             }
+            // 禁用 Ctrl+U (檢視原始碼)
             if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u')) {
                 e.preventDefault();
                 return false;
             }
+            // 禁用 Ctrl+S (存檔)
             if ((e.ctrlKey || e.metaKey) && (e.key === 'S' || e.key === 's')) {
                 e.preventDefault();
                 return false;
@@ -898,7 +891,8 @@
                 prize: prize,
                 isPoked: false,
                 winner: "",
-                pokedAt: 0
+                pokedAt: 0,
+                coverEmoji: "👻"
             }));
 
             const gamePayload = {
@@ -960,14 +954,7 @@
                 } else {
                     const paper = document.createElement('div');
                     paper.className = 'paper';
-                    
-                    // 使用小鴨 Base64 圖片做為未開格圖示
-                    const duckImg = document.createElement('img');
-                    duckImg.src = DUCK_IMAGE_BASE64;
-                    duckImg.className = 'duck-icon';
-                    duckImg.alt = '未開格小鴨';
-                    paper.appendChild(duckImg);
-
+                    paper.innerHTML = '👻';
                     paper.onclick = () => handleAdminPoke(cell.id - 1, cell);
                     cellEl.appendChild(paper);
                 }
@@ -1050,14 +1037,7 @@
                 } else {
                     const paper = document.createElement('div');
                     paper.className = 'paper';
-                    
-                    // 使用小鴨 Base64 圖片做為未開格圖示
-                    const duckImg = document.createElement('img');
-                    duckImg.src = DUCK_IMAGE_BASE64;
-                    duckImg.className = 'duck-icon';
-                    duckImg.alt = '未開格小鴨';
-                    paper.appendChild(duckImg);
-
+                    paper.innerHTML = '👻';
                     paper.onclick = () => handlePlayerPoke(cell.id - 1, cell, hasPoked, isExpired, hasBigPrizesLeft);
                     cellEl.appendChild(paper);
                 }
