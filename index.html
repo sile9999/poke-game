@@ -482,7 +482,7 @@
 </head>
 <body>
 
-    <!-- 主頁面頂部標題（玩家頁面改由動態活動名稱做標題） -->
+    <!-- 主頁面頂部標題 -->
     <h1 id="mainTitleHeader">🏮 懷舊戳戳樂 🏮</h1>
 
     <!-- ==================== 頁面一：主控與設定頁面 ==================== -->
@@ -490,6 +490,7 @@
         <!-- 主頁面登入卡片 -->
         <div id="adminLoginCard" class="login-card">
             <h2>🔑 管理員登入</h2>
+            <!-- 修正：無提示預設密碼 -->
             <input type="password" id="inputAdminPass" placeholder="請輸入主控密碼">
             <button class="btn-apply" onclick="loginAdmin()">進入管理後台</button>
         </div>
@@ -499,6 +500,11 @@
             <div class="config-panel">
                 <h3>⚙️ 遊戲設定 (主控面版)</h3>
                 <div class="input-group">
+                    <!-- 修正：時間挑選器移至最上方 -->
+                    <div class="input-row">
+                        <label for="endTime">⏳ 結束時間：</label>
+                        <input type="datetime-local" id="endTime">
+                    </div>
                     <div class="input-row">
                         <label for="eventName">活動名稱：</label>
                         <input type="text" id="eventName" placeholder="例如：嬌嬌">
@@ -506,10 +512,6 @@
                     <div class="input-row">
                         <label for="roomPassword">🔑 玩家頁連線密碼：</label>
                         <input type="text" id="roomPassword" value="8888" placeholder="設定玩家進入密碼">
-                    </div>
-                    <div class="input-row">
-                        <label for="endTime">⏳ 結束時間：</label>
-                        <input type="datetime-local" id="endTime">
                     </div>
                     <div class="input-row">
                         <label for="totalCount">總格子數量：</label>
@@ -628,7 +630,7 @@
         let currentGameData = null;
         let activeMode = 'A';
         let currentPlayerName = "";
-        const ADMIN_DEFAULT_PASS = "3067869"; // 預設主頁面管理者密碼
+        const ADMIN_DEFAULT_PASS = "3067869"; // 主頁面管理者密碼
 
         // 時間格式化工具 (YYYY-MM-DD HH:mm:ss)
         function formatDate(timestamp) {
@@ -831,7 +833,7 @@
                     const paper = document.createElement('div');
                     paper.className = 'paper';
                     paper.innerText = cell.id;
-                    // 管理者/設定者可自由手動戳獎
+                    // 修正：代抽不彈窗提示，直接帶入管理者代抽並開獎
                     paper.onclick = () => handleAdminPoke(cell.id - 1, cell);
                     cellEl.appendChild(paper);
                 }
@@ -839,26 +841,14 @@
             });
         }
 
-        // 管理者主頁面自由戳獎
+        // 管理者主頁面代抽 (免彈窗直接開獎)
         function handleAdminPoke(index, cell) {
             if (cell.isPoked) return;
-            
-            const winnerName = prompt(`【主控手動開獎】您點擊了第 ${cell.id} 格\n請輸入得獎者名字或備註：`, "管理者代抽");
-            if (winnerName === null) return; // 取消操作
-
-            const finalWinner = winnerName.trim() || "管理者代抽";
 
             db.ref(`sharedPokeGame/cells/${index}`).update({
                 isPoked: true,
-                winner: finalWinner,
+                winner: "管理者代抽",
                 pokedAt: Date.now()
-            }).then(() => {
-                const isTurtle = cell.prize.includes("烏龜");
-                if (isTurtle) {
-                    alert(`第 ${cell.id} 格開獎完成：🐢 烏龜 (${finalWinner})`);
-                } else {
-                    alert(`第 ${cell.id} 格開獎完成：🎉 ${cell.prize} (${finalWinner})`);
-                }
             });
         }
 
@@ -924,7 +914,6 @@
 
         // 玩家進行點擊開獎
         function handlePlayerPoke(index, cell, hasPoked, isExpired) {
-            // 驗證是否超時
             if (isExpired || (currentGameData.endTime && Date.now() > currentGameData.endTime)) {
                 alert("⏰ 活動時間已結束，無法再進行戳獎囉！");
                 return;
@@ -935,7 +924,6 @@
                 return;
             }
             
-            // 雙重驗證：檢查全域資料庫中此玩家名字是否已存在
             const isNameAlreadyPoked = currentGameData.cells.some(c => c.isPoked && c.winner === currentPlayerName);
             
             if (hasPoked || isNameAlreadyPoked) {
@@ -948,7 +936,6 @@
                 return;
             }
 
-            // 更新 Firebase 資料庫
             db.ref(`sharedPokeGame/cells/${index}`).update({
                 isPoked: true,
                 winner: currentPlayerName,
