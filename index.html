@@ -929,13 +929,15 @@
             const pokeBox = document.getElementById('playerPokeBox');
             pokeBox.innerHTML = "";
 
+            // 檢查是否還有未被戳出的「大獎」（非烏龜）
+            const hasBigPrizesLeft = data.cells.some(c => !c.prize.includes("烏龜") && !c.isPoked);
             const isExpired = data.endTime && Date.now() > data.endTime;
             const hasPoked = currentPlayerName ? data.cells.some(c => c.isPoked && c.winner === currentPlayerName) : false;
-            const allPoked = data.cells.every(c => c.isPoked); // 判斷是否全數抽完
+            
             const statusTag = document.getElementById('playerStatusTag');
             
-            if (allPoked) {
-                statusTag.innerText = "⛔ 活動已結束 (獎品全數抽完)";
+            if (!hasBigPrizesLeft) {
+                statusTag.innerText = "⛔ 活動已結束 (大獎已全數抽完)";
                 statusTag.style.color = "#d32f2f";
             } else if (isExpired) {
                 statusTag.innerText = "⏰ 活動已截止";
@@ -965,7 +967,7 @@
                     const paper = document.createElement('div');
                     paper.className = 'paper';
                     paper.innerText = cell.id;
-                    paper.onclick = () => handlePlayerPoke(cell.id - 1, cell, hasPoked, isExpired, allPoked);
+                    paper.onclick = () => handlePlayerPoke(cell.id - 1, cell, hasPoked, isExpired, hasBigPrizesLeft);
                     cellEl.appendChild(paper);
                 }
                 pokeBox.appendChild(cellEl);
@@ -973,9 +975,9 @@
         }
 
         // 玩家進行點擊開獎
-        function handlePlayerPoke(index, cell, hasPoked, isExpired, allPoked) {
-            if (allPoked) {
-                alert("⛔ 活動已結束，所有格子都已經被戳完囉！");
+        function handlePlayerPoke(index, cell, hasPoked, isExpired, hasBigPrizesLeft) {
+            if (!hasBigPrizesLeft) {
+                alert("⛔ 活動已結束，所有大獎都已經被抽完囉！");
                 return;
             }
 
